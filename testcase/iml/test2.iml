@@ -1,0 +1,16 @@
+ld_cint 2
+st_int 0
+
+ld_cint 1
+ld_cint 2
+ld_int 0
+ld_cint 1
+pls_int _
+mul_int _
+pls_int _
+st_int 1
+ld_int 1
+st_int 0
+
+ld_int 1
+print _

@@ -1,0 +1,30 @@
+cd mnt/c/Users/357ys/Desktop/Study/sctokyo/zemi/ml_interpreter
+python ./pypy/rpython/bin/rpython example2.py
+python ./pypy/rpython/bin/rpython --opt=jit example3.py
+PYPYLOG=jit-log-opt:logfile ./example5-c mandel.b
+
+ASTの勉強
+CIL/CLI
+
+t = tを畳み込むのどうすんの？
+printの複数型対応⇒stringのみ対応しての方針？
+定数は正の値のみ認める
+
+VM
+
+20260106
+・長いテストを生成
+　・ユニットテストにも追加
+・ユニットテストの修正
+　・個別関数に分けて、どのテストが正しくないか分かるようになった。
+・interpreter_RPy.pyを生成
+　・Rpyhtonに対応
+　　・getprogram、__main__、entry_point、target
+　　・過程でglobalのバグで-debugが機能しなくなったので-debugを一旦削除
+・interpreter_jit.pyを作成
+　・JITに対応させようとした
+　　・interpret partと最後のbody部を編集
+　　・トレース全然出てこない。？？？？
+
+
+

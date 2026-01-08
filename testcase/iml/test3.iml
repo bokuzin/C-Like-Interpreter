@@ -1,0 +1,14 @@
+ld_cint 200
+st_int 0
+ld_int 0
+ld_cint 3
+lss_int _
+not _
+jmpif 10
+ld_int 0
+print _
+jump 14
+ld_cint 0
+ld_int 0
+sub_int _
+print _

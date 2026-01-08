@@ -1,0 +1,14 @@
+// p > q を仮定
+int p = 48;
+int q = 18;
+
+print(p);
+print(q);
+while(q != 0){
+   int tmp = p%q;
+   p = q;
+   q = tmp;
+   print(p);
+   print(q);
+}
+print(p);

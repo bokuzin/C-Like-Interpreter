@@ -1,0 +1,31 @@
+ld_cint 27
+st_int 0
+ld_int 0
+print _
+ld_int 0 // Loop start : 4
+ld_cint 1
+eq_int _
+not _
+not _
+jmpif 31
+ld_int 0
+ld_cint 2
+mod_int _
+ld_cint 0
+eq_int _
+not _
+jmpif 22
+ld_int 0
+ld_cint 2
+div_int _
+st_int 0
+jump 28
+ld_cint 3 // 22
+ld_int 0
+mul_int _
+ld_cint 1
+pls_int _
+st_int 0
+ld_int 0 // 28
+print _
+jump 4

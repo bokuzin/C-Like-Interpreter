@@ -1,0 +1,13 @@
+//jump命令やjumpif命令を実際に作る気はあまりない
+int n = 20;
+{
+   int i = 0;
+   {
+      loopstart:
+      jumpif(!(i < n)) : outside;
+      print(i)
+      i = i + 1;
+      jump : loopstart;
+   }
+   outside:
+}

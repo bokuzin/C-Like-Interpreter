@@ -1,0 +1,7 @@
+int t = 200;
+if (t < 3){
+   print(t);
+}
+else{
+   print(0-t);
+}

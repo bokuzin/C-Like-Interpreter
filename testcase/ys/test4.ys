@@ -1,0 +1,6 @@
+int t = 10;
+while (t > 0){
+   print(t);
+   t-=2;
+}
+print(t)

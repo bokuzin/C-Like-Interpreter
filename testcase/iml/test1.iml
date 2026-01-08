@@ -1,0 +1,45 @@
+ld_cint 2
+st_int 0
+
+ld_int 0
+print _
+
+ld_int 0
+ld_int 0
+pls_int _
+st_int 0
+
+ld_int 0
+print _
+
+ld_int 0
+ld_cint 3
+sub_int _
+st_int 0
+
+ld_int 0
+print _
+
+ld_int 0
+ld_cint 4
+mul_int _
+st_int 0
+
+ld_int 0
+print _
+
+ld_int 0
+ld_cint 2
+div_int _
+st_int 0
+
+ld_int 0
+print _
+
+ld_int 0
+ld_cint 4
+mod_int _
+st_int 0
+
+ld_int 0
+print _
