@@ -17,86 +17,117 @@ AND = 12
 OR = 13
 NOT = 14
 JUMP = 15
-JMPIF = 16
+JUMPIF = 16
 PRINT = 17
 # -----------------------------
 
 # ------interpret part---------
+def get_printable_location(codesize, pc, stack_alloc, stack_size, code, stack):
+    return "pc = %d instr = %d" % (pc, code)
+
+
 from rpython.rlib.jit import JitDriver
-jitdriver = JitDriver(greens=['codesize', 'pc', 'code'], reds=['temp_int','data_int'])
+jitdriver = JitDriver(greens=['codesize', 'pc', 'stack_alloc', 'stack_size', 'code', 'stack'], reds=['reg'], get_printable_location=get_printable_location)
 
-def get_location(codesize, pc, code):
-    return "%s_%s_%s" % (code[:pc], code[pc], code[pc+1:])
+def stack_push(stack, alloc, size, n):
+    if alloc <= size:
+        stack.append(-1)
+        alloc += 1
+    stack[size] = n
+    size+=1
+    return (alloc,size)
 
+def stack_pop(stack, alloc, size):
+    size-=1
+    poped=stack[size]
+    return (alloc, size, poped)
+
+def interpreter_debug(pc,code,stack,stack_alloc,stack_size,reg):
+    print("pc   : " + str(pc))
+    print("stack : " + str(stack))
+    print("stackalloc : " + str(stack_alloc))
+    print("stacksize : " + str(stack_size))
+    print("reg : " + str(reg))
+    print("")
+
+STACKBASESIZE = 5
 # interpreter body
 def interpret(code):
-    temp_int = []
-    data_int = []
     codesize = len(code)
     pc = 0
+    stack = [-1]*STACKBASESIZE
+    stack_alloc = STACKBASESIZE
+    stack_size = 0
+    reg = []
     while pc < codesize:
-        jitdriver.jit_merge_point(codesize=codesize, pc=pc, code=code, temp_int=temp_int,data_int=data_int)
+        jitdriver.jit_merge_point(codesize=codesize, pc=pc, stack_alloc=stack_alloc, stack_size=stack_size, code=code, stack=stack, reg=reg)
         instr = code[pc]
+        # interpreter_debug(pc,code,stack,stack_alloc,stack_size,reg)
         if instr[0] == LD_INT:
-            temp_int.append(data_int[instr[1]])
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, reg[instr[1]])
         elif instr[0] == LD_CINT:
-            temp_int.append(instr[1])
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, instr[1])
         elif instr[0] == ST_INT:
-            if len(data_int) <= instr[1] :
-                data_int.append(0)
-            data_int[instr[1]] = temp_int.pop()
+            if len(reg) <= instr[1] :
+                reg.append(0)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            reg[instr[1]] = x
         elif instr[0] == PLS_INT:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(x + y)
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, x + y)
         elif instr[0] == SUB_INT:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(x - y)
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, x - y)
         elif instr[0] == MUL_INT:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(x * y)
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, x * y)
         elif instr[0] == DIV_INT:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(int(x / y))
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, int(x / y))
         elif instr[0] == MOD_INT:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(x % y)
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, x % y)
         elif instr[0] == LSS_INT:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(int(x < y))
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, int(x < y))
         elif instr[0] == GRT_INT:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(int(x > y))
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, int(x > y))
         elif instr[0] == EQ_INT:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(int(x == y))
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, int(x == y))
         elif instr[0] == AND:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(int(x and y))
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, int(x and y))
         elif instr[0] == OR:
-            y = temp_int.pop()
-            x = temp_int.pop()
-            temp_int.append(int(x or y))
+            stack_alloc, stack_size, y = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, int(x or y))
         elif instr[0] == NOT:
-            x = temp_int.pop()
-            temp_int.append(int(not x))
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            stack_alloc, stack_size = stack_push(stack, stack_alloc, stack_size, int(not x))
         elif instr[0] == JUMP:
-            pc = instr[1]
+            target = instr[1]
+            pc = target
             continue
-        elif instr[0] == JMPIF:
-            if temp_int.pop():
-                pc = instr[1]
+        elif instr[0] == JUMPIF:
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            if x:
+                target = instr[1]
+                pc = target
                 continue
         elif instr[0] == PRINT:
-            print(temp_int.pop())
+            stack_alloc, stack_size, x = stack_pop(stack, stack_alloc, stack_size)
+            print(x)
         pc+=1
 
 # -----------------------------
@@ -165,8 +196,8 @@ def decode_iml(filename):
             codenumber = NOT
         elif instr[0] == "jump":
             codenumber = JUMP
-        elif instr[0] == "jmpif":
-            codenumber = JMPIF
+        elif instr[0] == "jumpif":
+            codenumber = JUMPIF
         elif instr[0] == "print":
             codenumber = PRINT
         else :
@@ -181,7 +212,7 @@ def entry_point(argv):
     try:
         filename = argv[1]
     except IndexError:
-        print "Need a filename."
+        print("Need a filename.")
         return 1
     # code = decode(filename)
     code = decode_iml(filename)
